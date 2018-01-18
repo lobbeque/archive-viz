@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Where the dead blogs are</title>
+    
+    <!-- Css Lib -->
+    <link href="./lib/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./lib/css/font-awesome.min.css" rel="stylesheet"> 
+    <link href="./lib/css/qlobbe.css" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet"> 
+    
+    <!-- Javascript Lib -->
+    <script type="text/javascript" src="./lib/js/jquery-1.12.1.min.js"></script>
+    <script type="text/javascript" src="./lib/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./lib/js/d3.min.js"></script> 
+    <script type="text/javascript" src="./lib/js/underscore-min.js"></script>  
+
+    <style>
+
+    .title {
+      font-family: 'Montserrat', sans-serif;
+      text-rendering: optimizeLegibility;
+      font-size: 30px;
+      font-weight: 700;   
+      color: #202626;
+      margin-bottom:10px;
+    }     
+
+    .subtitle {
+      font-family: 'Montserrat', sans-serif;
+      text-rendering: optimizeLegibility;
+      font-size: 15px;
+      font-weight: 400;  
+      color: #2C3E50; 
+      margin-bottom:10px;
+    }
+
+    .caption {
+      font-family: 'Montserrat', sans-serif;
+      text-rendering: optimizeLegibility;
+      font-size: 12px;
+      font-weight: 400;  
+      color: #2C3E50;
+    }    
+
+    .frame-title {
+      font-family: 'Montserrat', sans-serif;
+      text-rendering: optimizeLegibility;
+      font-size: 20px;
+      font-weight: 700;  
+      color: #2C3E50; 
+      margin-bottom:10px;
+    }
+
+    .label-prev {
+      text-anchor:middle;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px;
+      font-weight: 400;  
+    }
+
+    .head {
+      margin-top:   30px;
+      margin-left:  40px;
+      margin-right: 40px;
+    }
+
+    .data {
+      margin-top:    0px;
+      margin-left:  40px;
+      margin-right: 40px;      
+    }
+
+    div.tooltip {  
+      position: absolute;     
+      text-align: start;     
+      width: 110px;         
+      padding: 2px;       
+      font: 12px sans-serif;    
+      background: #FFF; 
+      border: 1px;
+      border-color: #000;
+      border-style: solid;    
+      pointer-events: none;     
+    }    
+
+    .blog-2008 {
+      fill: #3498DB;
+    }
+
+    .blog-2018 {
+      fill: #B2AFC2;
+    }
+
+    .blog-2000 {
+      fill: #F2E24C;
+    }
+
+    .blog-2008-caption {
+      fill: #3498DB;
+      stroke:#2C3E50;
+      stroke-width:1px;
+    }
+
+    .blog-2018-caption {
+      fill: #B2AFC2;
+      stroke:#2C3E50;
+      stroke-width:1px;
+    }    
+
+    .blog-2000-caption {
+      fill: #F2E24C;
+      stroke:#2C3E50;
+      stroke-width:1px;
+    }
+
+    .blog-caption {
+      fill: none;
+      stroke:#2C3E50;
+      stroke-width:1px;
+    }
+
+    .blog-focus {
+      fill:none;
+      stroke:#F25E38;
+      stroke-width:3px;     
+    }
+
+    .blog-label {
+      font-family: 'Montserrat', sans-serif;
+      text-rendering: optimizeLegibility;
+      font-size: 18px;
+      font-weight: 700;  
+      fill: #F25E38; 
+      margin-bottom:10px;
+      text-anchor:middle;
+    }
+
+    .blog-info {
+      font-family: 'Montserrat', sans-serif;
+      text-rendering: optimizeLegibility;
+      font-size: 12px;
+      font-weight: 400;  
+      color: #2C3E50;
+      text-anchor:middle;
+    }
+
+    .line {
+      fill: none;
+      stroke: #2C3E50;
+      stroke-width: 2px;
+    }
+
+    .link-2008 {
+      fill: none;
+      stroke: #3498DB;
+      stroke-width: 1px;
+      opacity : 0.5;
+    }    
+
+    .link-2000 {
+      fill: none;
+      stroke: #F2E24C;
+      stroke-width: 2px;
+    }
+
+    .link-2018 {
+      fill: none;
+      stroke: #B2AFC2;
+      stroke-width: 1px;
+      opacity : 0.5;
+    }
+
+    .link-social {
+      fill: none;
+      stroke: #3498DB;
+      stroke-width: 1px;
+      opacity : 0.5;
+    }
+
+    .social-shape {
+      fill: #3498DB;
+    }
+
+    .social-caption {
+      fill: #FFF;
+      stroke:#2C3E50;
+      stroke-width:1px;      
+    }    
+
+    .social-focus {
+      fill:none;
+      stroke:#F25E38;
+      stroke-width:3px;
+    }
+
+    .social-icon {
+      font-family:FontAwesome;
+      text-anchor:middle;
+      fill:#FFF;
+    }
+
+    .arc path {
+      stroke: #fff;
+      stroke-width:2px;
+    }
+
+    body {
+      background-color: #FFF;
+    }
+
+    </style>    
+  </head>
+  
+  <body>
+      <div class="container-fluid head">
+        <p class="title">
+          Where the dead blogs are 
+          <small class="subtitle"> The evolution of the Moroccan blogosphere* from 2008 to 2018</small>
+        </p>
+      </div>
+      <br>
+      <div class="container-fluid data" id="data">   
+
+      <script type="text/javascript">
+
+        screenHeight = $(window).height()
+        screenWidth  = document.getElementById("data").offsetWidth
+        
+        // Size and marging
+
+        var w = screenWidth  - 30,
+            h = screenHeight - 120;
+
+        var svg = d3.select("#data")
+            .append("svg")
+            .attr("width" , w)
+            .attr("height", h);
+
+        var arc = d3.arc()
+            .outerRadius(60)
+            .innerRadius(35)
+            .cornerRadius(3);
+
+        var pie = d3.pie()
+            .sort(null)
+            .value(function(d) { return parseInt(d.split(":")[1]); });
+
+        var div = d3.select("body").append("div") 
+            .attr("class", "tooltip")       
+            .style("opacity", 0);
+
+        var frame  = svg.append("g");
+
+        function isDead(url){
+          return blogs[url]["Status"] == "0"
+        }
+
+        var icons = {"tw":"\uF099","fb":"\uF09A","yt":"\uF167","md":"\uF040","fk":"\uF030"}
+
+        var countryColor = {"Algeria" : "#006233","Morocco" : "#C1272D","Egypt" : "#C09300","Tunisia" : "#E70013","Libya" : "#239E46","France" : "#002395","China" : "#DE2910","Spain" : "#FFC400","Netherlands" : "#21468B","United-States" : "#3C3B6E","Pakistan" : "#01411C","Indonesia" : "#CE1126","Bangladesh" : "#F42A41","Nigeria" : "#008751","India" : "#FF9933","Misc" : "#CECAE0","None" : "#918F9E","Belgium" :"#000000","United-Kingdom" : "#00247D","Canada" : "#FF0000","South-Korea" : "#003478"}
+
+        var isHidden = {"notupdated":false,"social":false,"prev":false}
+
+        function hide(css){
+          if (isHidden[css]) {
+            frame.selectAll("." + css).style("visibility","visible");
+            isHidden[css] = false
+          } else {
+            frame.selectAll("." + css).style("visibility","hidden");
+            isHidden[css] = true
+          }  
+        }
+
+        function drawSocial(b,x,y,css,d,p){
+          frame.append("rect")
+               .attr("class","social-shape social")
+               .attr("width",b["Degree-" + css])
+               .attr("height",b["Degree-" + css])
+               .attr("rx", 6)
+               .attr("ry", 6)
+               .attr("x",x + parseInt(b["X-" + css]) - parseInt(b["Degree-" + css]) / 2)
+               .attr("y",y + parseInt(b["Y-" + css]) - parseInt(b["Degree-" + css]) / 2); 
+          frame.append("text")
+               .attr("class","social-icon social")
+               .attr('font-size', d + "px" )
+               .attr("x",x + parseInt(b["X-" + css]))
+               .attr("y",y + parseInt(b["Y-" + css]) + p)
+               .text(icons[css])
+               .on("mouseover", function(){
+                 d3.select(this).style("cursor", "pointer");
+               })
+               .on("click", function() {
+                 drawOnClick(b)  
+               });
+        }        
+
+        function drawSocialFocus(b,x,y,css){
+          frame.append("rect")
+               .attr("class","social-focus focus social")
+               .style("visibility",function(c){
+                  if(isHidden["social"])
+                    return "hidden";
+                  return "visible";
+               })
+               .attr("width",b["Degree-" + css])
+               .attr("height",b["Degree-" + css])
+               .attr("rx", 6)
+               .attr("ry", 6)
+               .attr("x",x + parseInt(b["X-" + css]) - parseInt(b["Degree-" + css]) / 2)
+               .attr("y",y + parseInt(b["Y-" + css]) - parseInt(b["Degree-" + css]) / 2); 
+        }
+
+        function drawLinks(l,x,y,css){
+          var x1 = x + parseInt(blogs[l["From"]]["X"])
+          var y1 = y + parseInt(blogs[l["From"]]["Y"])
+          var x2 = x + parseInt(blogs[l["To"]]["X"])
+          var y2 = y + parseInt(blogs[l["To"]]["Y"]) 
+          frame.append("path")
+               .attr("class",css)
+               .attr("d", function(d) {
+                  return "M" + x1 + "," + y1
+                    + "C" + x2 + "," + y1
+                    + " " + x2 + "," + y2
+                    + " " + x2 + "," + y2;                        
+               });          
+        }
+
+        function drawLinksSocial(l,x,y,css){
+          var x1 = x + parseInt(blogs[l["From"]]["X-tw"])
+          var y1 = y + parseInt(blogs[l["From"]]["Y-tw"])
+          var x2 = x + parseInt(blogs[l["To"]]["X-tw"])
+          var y2 = y + parseInt(blogs[l["To"]]["Y-tw"])
+          frame.append("path")
+               .attr("class",css)
+               .attr("d", function(d) {
+                  return "M" + x1 + "," + y1
+                    + "C" + x2 + "," + y1
+                    + " " + x2 + "," + y2
+                    + " " + x2 + "," + y2;                        
+               });          
+        } 
+
+        function drawLinksPrev(b,x,y,css){
+          var x1 = x + parseInt(b["X-prev"])
+          var y1 = y + parseInt(b["Y-prev"])
+          var x2 = x + parseInt(b["X"])
+          var y2 = y + parseInt(b["Y"])
+          frame.append("path")
+               .attr("class",css)
+               .style("stroke-dasharray", ("3, 3"))
+               .attr("d", function(d) {
+                  return "M" + x1 + "," + y1
+                    + "C" + x2 + "," + y1
+                    + " " + x2 + "," + y2
+                    + " " + x2 + "," + y2;                        
+               });          
+        }                
+
+        function drawBlogs(b,x,y,css,d){
+          frame.append("circle")
+            .attr("cx",x + parseInt(b["X"]))
+            .attr("cy",y + parseInt(b["Y"]))
+            .attr("r",d)
+            .attr("class",css)
+            .style("visibility",function(c){
+               if(isHidden["notupdated"] && css.indexOf("notupdated") != -1)
+                 return "hidden";
+               return "visible";
+            })            
+            .on("mouseover", function(){
+              d3.select(this).style("cursor", "pointer");
+            })
+            .on("click", function() {
+              console.log("coucou")
+              drawOnClick(b)  
+            });          
+        }
+
+        function drawBlogsPrev(b,x,y,css,d){
+          var prev = (b["Prev-url"]!="NA") ? b["Prev-url"] : null;
+          frame.append("circle")
+            .attr("cx",x + parseInt(b["X-prev"]))
+            .attr("cy",y + parseInt(b["Y-prev"]))
+            .attr("r",d)
+            .attr("class",css)
+            .on("mouseover", function(){
+              if (prev != null)
+                d3.select(this).style("cursor", "pointer");
+            })
+            .on("click", function() { 
+              if (prev != null)
+                window.open(prev); 
+            });            
+          frame.append("text")
+            .attr("x",x + parseInt(b["X-prev"]))
+            .attr("y",y + parseInt(b["Y-prev"]) + 15)
+            .attr("class","label-prev prev")
+            .text(b["Note-prev"]);          
+        }    
+
+        function drawPie(b,css,y,d){
+          var countries = b[css + "-countries"].split(";");
+          frame.selectAll(".arc Tw")
+               .data(pie(countries))
+               .enter().append("g")
+               .attr("transform", "translate(" + w/2 + "," + (y + 3*d) + ")")
+               .attr("class", "arc focus")
+               .append("path")
+               .attr("d", arc)
+               .style("fill", function(d) { 
+                  return countryColor[d.data.split(":")[0]]; 
+               }).on("mouseover", function(d){
+                  d3.select(this).style("cursor", "pointer");
+                  var data = d.data.split(":");
+                  div.transition()    
+                     .duration(200)    
+                     .style("opacity", .9);    
+                  div.html(data[0] + "<br/>"  + data[1] + " followers")  
+                     .style("left", (d3.event.pageX + 10) + "px")   
+                     .style("top",  (d3.event.pageY - 28) + "px");  
+               }).on("mouseout", function() { 
+                  d3.select(this).style("cursor", "default")  
+                  div.transition()    
+                     .duration(500)    
+                     .style("opacity", 0); 
+               });
+          frame.append("text")
+               .attr("x",w/2)
+               .attr("y",y + 3*d - 5)
+               .attr("class","focus blog-info")
+               .text("by");
+          frame.append("text")
+               .attr("x",w/2)
+               .attr("y",y + 3*d + 8)
+               .attr("class","focus blog-info")
+               .text("country");          
+        }    
+
+        function drawLabel(b) {
+          var y = 2*yL
+          var d = 20
+
+          // title
+          frame.append("text")
+            .attr("x",w/2)
+            .attr("y",y)
+            .attr("class","focus blog-label")    
+            .text(b["Domain"])
+            .on("mouseover", function(){
+              d3.select(this).style("cursor", "pointer");
+            })
+            .on("click", function() { window.open(b["Last-url"]); });
+          y += d
+
+          // dates
+          var created = (b["Creation"]!="NA") ? b["Creation"] : "??";
+          var updated = (b["Last-update"]!="NA") ? b["Last-update"] : "??"; 
+          frame.append("text")
+            .attr("x",w/2)
+            .attr("y",y)
+            .attr("class","focus blog-info")    
+            .text(created + " → " + updated + " : " + b["Status-txt"])
+          y += d 
+
+          if (b["Prev-url"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("Previously wrote on another blog ⤴")
+              .on("mouseover", function(){
+                d3.select(this).style("cursor", "pointer");
+              })
+              .on("click", function() { window.open(b["Prev-url"]); });
+            y += d 
+          }
+
+          if (b["First-social"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("First social network linked in " + b["First-social"])
+            y += d 
+          }
+
+          if (b["Note-first-social"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("following the " + b["Note-first-social"] + " ⤴")
+              .on("mouseover", function(){
+                d3.select(this).style("cursor", "pointer");
+              })
+              .on("click", function() { window.open(b["Url-first-social"]); });
+            y += d 
+          }
+
+          if (b["Death-url"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("Wrote a farewell message ⤴")
+              .on("mouseover", function(){
+                d3.select(this).style("cursor", "pointer");
+              })
+              .on("click", function() { window.open(b["Death-url"]); });
+            y += d 
+          }  
+
+          if (b["Post-url"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("Moved to a new blog in " + b["Creation-post-url"] + " ⤴")
+              .on("mouseover", function(){
+                d3.select(this).style("cursor", "pointer");
+              })
+              .on("click", function() { window.open(b["Post-url"]); });
+            y += d 
+          }
+
+          if (b["Blog-users"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("Followed by some of its past commentators :");
+            y += d 
+            var x1 = w/2
+            var y1 = y
+            var x2 = w/2
+            var y2 = y + 2*d
+            var u1 = parseInt(b["Blog-users"])
+            var u2 = parseInt(b["Stable-users"])
+            var rectW = 100
+            var rect2 = ( u2 * rectW ) / u1
+            frame.append("rect")
+              .attr("x",w/2 - rectW)
+              .attr("y",y + d/2 + 5)
+              .attr("width",rectW)
+              .attr("height",d)
+              .attr("class","focus") 
+              .style("fill","#F25E38");
+            frame.append("rect")
+              .attr("x",w/2)
+              .attr("y",y + d/2 + 5)
+              .attr("width",rect2)
+              .attr("height",d)
+              .attr("class","focus")
+              .style("fill","#F25E38");
+            frame.append("rect")
+              .attr("x",w/2 + rect2)
+              .attr("y",y + d/2 + 5)
+              .attr("width",rectW - rect2)
+              .attr("height",d)
+              .attr("class","focus")
+              .style("fill","#CECAE0"); 
+            frame.append("text")
+              .attr("x",w/2 - 5)
+              .attr("y",y + d/2)
+              .attr("class","focus blog-info")
+              .style("text-anchor","end")    
+              .text(b["Blog-users"] + " people ↷"); 
+            frame.append("text")
+              .attr("x",w/2 + 5)
+              .attr("y",y + d/2)
+              .attr("class","focus blog-info")
+              .style("text-anchor","start")    
+              .text("↶ " + b["Stable-users"] + " left");                                    
+            frame.append("path")
+              .attr("class","line focus")
+              .attr("d", function(d) {
+                return "M" + x1 + "," + y1
+                  + "C" + x2 + "," + y1
+                  + " " + x2 + "," + y2
+                  + " " + x2 + "," + y2;                        
+              });
+            y += 3*d  
+          }          
+
+          if (b["Fb"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("Has a facebook page since " + b["Creation-fb"] + " ⤴")
+              .on("mouseover", function(){
+                d3.select(this).style("cursor", "pointer");
+              })
+              .on("click", function() { window.open(b["Fb"]); });
+            y += d 
+          }
+
+          if (b["Fb"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("followed by " + b["Follow-fb"] + " people");
+            y += d 
+          }   
+
+          if (b["Fb-countries"] != "NA") {
+            drawPie(b,"Fb",y,d);
+            y += 7*d 
+          }
+
+          if (b["Tw"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("Has a twitter account since " + b["Creation-tw"] + " ⤴")
+              .on("mouseover", function(){
+                d3.select(this).style("cursor", "pointer");
+              })
+              .on("click", function() { window.open(b["Tw"]); });
+            y += d 
+          }
+
+          if (b["Tw"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("followed by " + b["Follow-tw"] + " people");
+            y += d 
+          }
+
+          if (b["Tw-countries"] != "NA") {
+            drawPie(b,"Tw",y,d);
+            y += 7*d 
+          }                                                
+
+          if (b["Yt"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("Has a youtube account ⤴")
+              .on("mouseover", function(){
+                d3.select(this).style("cursor", "pointer");
+              })
+              .on("click", function() { window.open(b["Yt"]); });
+            y += d 
+          }
+
+          if (b["Md"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("Has a long blog account ⤴")
+              .on("mouseover", function(){
+                d3.select(this).style("cursor", "pointer");
+              })
+              .on("click", function() { window.open(b["Md"]); });
+            y += d 
+          }
+
+          if (b["Fk"] != "NA") {
+            frame.append("text")
+              .attr("x",w/2)
+              .attr("y",y)
+              .attr("class","focus blog-info")    
+              .text("Has a images sharing account ⤴")
+              .on("mouseover", function(){
+                d3.select(this).style("cursor", "pointer");
+              })
+              .on("click", function() { window.open(b["Fk"]); });
+            y += d 
+          }                    
+
+        }
+
+        function drawOnClick(b){
+           
+          frame.selectAll(".focus").remove();
+
+          drawBlogs(b,xL,yL,"focus blog-focus",b["Degree"])
+          drawLabel(b);
+
+          if (!isDead(b["Url"])) {
+              if (b["Status"] == "1") {
+                drawBlogs(b,xR,yR,"focus blog-focus notupdated",b["Degree-2018"])
+              } else {
+                drawBlogs(b,xR,yR,"focus blog-focus",b["Degree-2018"])
+              }                       
+          }
+
+          if (b["Tw"] != "NA")
+            drawSocialFocus(b,xR,yR,"tw")
+
+          if (b["Fb"] != "NA")
+            drawSocialFocus(b,xR,yR,"fb")
+
+          if (b["Yt"] != "NA")
+            drawSocialFocus(b,xR,yR,"yt")
+
+          if (b["Md"] != "NA")
+            drawSocialFocus(b,xR,yR,"md")
+
+          if (b["Fk"] != "NA")
+            drawSocialFocus(b,xR,yR,"fk")
+
+             
+
+        }
+
+        // set x,y left & right frame
+
+        var mT = 50;
+        var xL = w/12 - 50;
+        var yL = 130;
+        var xR = w/2 + (w/2 - w/12 - 400);
+        var yR = yL;
+
+        var blogs = {}
+
+        // Draw the past blogs        
+
+        d3.csv("./blogs-evolutions.csv", function(lines) {          
+          _.each(lines,function(l){
+            blogs[l["Url"]] = l;                    
+          })
+
+          d3.csv("./blogs-links.csv", function(lines) {          
+           
+            _.each(lines,function(l){ 
+
+              // 2008's links left
+              if (l["Type"] == "0")
+                drawLinks(l,xL,yL,"link-2008")            
+
+              // 2018's links
+              if (l["Type"] == "0" && !isDead(l["From"]) && !isDead(l["To"]))
+                drawLinks(l,xR,yR,"link-2018 notupdated")
+
+              if (l["Type"] == "0" && (blogs[l["From"]]["Status"] == "2" || blogs[l["From"]]["Status"] == "3") && (blogs[l["To"]]["Status"] == "2" || blogs[l["To"]]["Status"] == "3")) {
+                drawLinks(l,xR,yR,"link-2008")
+              }              
+
+              // Social's links
+              if (l["Type"] == "1")
+                drawLinksSocial(l,xR,yR,"link-social social")
+
+            })
+
+            // Add the blogs
+
+            _.each(blogs,function(b){
+
+              if (b["Prev-url"] != "NA")
+                drawLinksPrev(b,xL,yL,"link-2000 prev")     
+
+              if (b["Post-url"] != "NA")
+                drawLinksPrev(b,xR,yR,"link-2000 prev")                                
+
+              // 2008's blogs 
+              drawBlogs(b,xL,yL,"blog-2008",b["Degree"])
+
+              if (b["Prev-url"] != "NA")
+                drawBlogsPrev(b,xL,yL,"blog-2000 prev",5)
+
+              // 2018's blogs
+              if (b["Status"] == "2" || b["Status"] == "3")
+                drawBlogs(b,xR,yR,"blog-2008",b["Degree-2018"])                  
+
+              if (b["Status"] == "1")
+                drawBlogs(b,xR,yR,"blog-2018 notupdated",b["Degree-2018"])
+
+              if (b["Post-url"] != "NA")
+                drawBlogsPrev(b,xR,yR,"blog-2000 prev",5)
+
+              // Add Socials
+
+              // console.log(b["Tw"])
+
+              if (b["Tw"] != "NA")
+                drawSocial(b,xR,yR,"tw",25,10)
+
+              if (b["Fb"] != "NA")
+                drawSocial(b,xR,yR,"fb",25,10)
+
+              if (b["Yt"] != "NA")
+                drawSocial(b,xR,yR,"yt",20,8)
+
+              if (b["Md"] != "NA")
+                drawSocial(b,xR,yR,"md",20,8)
+
+              if (b["Fk"] != "NA")
+                drawSocial(b,xR,yR,"fk",15,6)                                                            
+
+
+            })       
+
+                            
+
+          })         
+       
+        })
+
+        // frame titles & captions
+
+        frame.append("text")
+            .attr("class","frame-title")
+            .attr("x",xL)
+            .attr("y",mT)
+            .text("2008-2010")
+
+        frame.append("text")
+            .attr("class","caption")
+            .attr("x",xL + 120)
+            .attr("y",mT)
+            .text("48 blogs alive")             
+
+        frame.append("circle")
+            .attr("cx",xL + 15)
+            .attr("cy",mT + 25)
+            .attr("r",15)
+            .attr("class","blog-caption") 
+
+        frame.append("circle")
+            .attr("cx",xL + 15)
+            .attr("cy",mT + 30)
+            .attr("r",8)
+            .attr("class","blog-caption")
+
+        frame.append("text")
+            .attr("class","caption")
+            .attr("x",xL + 35)
+            .attr("y",mT + 38)
+            .text("In degree")  
+
+        frame.append("rect")
+            .attr("x",xL + 105)
+            .attr("y",mT + 25)
+            .attr("width",30)
+            .attr("height",15)
+            .attr("rx", 1)
+            .attr("ry", 1)            
+            .attr("class","blog-2008-caption")    
+
+        frame.append("text")
+            .attr("class","caption")
+            .attr("x",xL + 140)
+            .attr("y",mT + 38)
+            .text("Alive")                                                    
+
+        frame.append("rect")
+            .attr("x",xL + 180)
+            .attr("y",mT + 25)
+            .attr("width",30)
+            .attr("height",15)
+            .attr("rx", 1)
+            .attr("ry", 1)            
+            .attr("class","blog-2000-caption")
+            .on("mouseover", function(){
+               d3.select(this).style("cursor", "pointer");
+             })
+            .on("click", function() {
+               hide("prev")  
+             }); 
+
+        frame.append("text")
+            .attr("class","caption")
+            .attr("x",xL + 215)
+            .attr("y",mT + 38)
+            .text("Previous blog")  
+
+        frame.append("text")
+            .attr("class","frame-title")
+            .attr("x",xR)
+            .attr("y",mT)
+            .text("2018")
+
+        frame.append("text")
+            .attr("class","caption")
+            .attr("x",xR + 60)
+            .attr("y",mT)
+            .text("20 dead blogs, 23 deserted, 5 alive")            
+
+        frame.append("rect")
+             .attr("class","social-caption")
+             .attr("width",27)
+             .attr("height",27)
+             .attr("rx", 6)
+             .attr("ry", 6)
+             .attr("x",xR)
+             .attr("y",mT + 12)
+             .on("mouseover", function(){
+               d3.select(this).style("cursor", "pointer");
+             })
+             .on("click", function() {
+               hide("social")  
+             });   
+
+        frame.append("rect")
+             .attr("class","social-caption")
+             .attr("width",15)
+             .attr("height",15)
+             .attr("rx", 6)
+             .attr("ry", 6)
+             .attr("x",xR + 6)
+             .attr("y",mT + 22)
+             .on("mouseover", function(){
+               d3.select(this).style("cursor", "pointer");
+             })
+             .on("click", function() {
+               hide("social")  
+             });                                                       
+
+        frame.append("text")
+            .attr("class","caption")
+            .attr("x",xR + 35)
+            .attr("y",mT + 38)
+            .text("Followers") 
+
+        frame.append("rect")
+            .attr("x",xR + 105)
+            .attr("y",mT + 25)
+            .attr("width",30)
+            .attr("height",15)
+            .attr("rx", 1)
+            .attr("ry", 1)            
+            .attr("class","blog-2018-caption")
+            .on("mouseover", function(){
+              d3.select(this).style("cursor", "pointer");
+            })
+            .on("click", function() {
+              hide("notupdated")  
+            });    
+
+        frame.append("text")
+            .attr("class","caption")
+            .attr("x",xR + 140)
+            .attr("y",mT + 38)
+            .text("Deserted")
+
+        frame.append("text")
+            .attr("class","caption")
+            .attr("x",0)
+            .attr("y",h - 10)
+            .style("font-size", "10px")
+            .text("*Author: Quentin Lobbé - using the Moroccan corpus of e-Diasporas by Dana Diminescu & Matthieu Renault  ⤴")
+            .on("mouseover", function(){
+              d3.select(this).style("cursor", "pointer");
+            })
+            .on("click", function() { window.open("http://e-diasporas.fr/wp/moroccan.html"); });  
+
+
+                     
+
+
+      </script>     
+  
+  </body>
+
+</html>
