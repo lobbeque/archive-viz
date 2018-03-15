@@ -8,54 +8,19 @@
     <title>Those who stayed over time</title>
     
     <!-- Css Lib -->
-    <link href="./lib/css/bootstrap.min.css" rel="stylesheet">
-    <link href="./lib/css/font-awesome.min.css" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
     <link href="./lib/css/qlobbe.css" rel="stylesheet"> 
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet"> 
     
     <!-- Javascript Lib -->
-    <script type="text/javascript" src="./lib/js/jquery-1.12.1.min.js"></script>
-    <script type="text/javascript" src="./lib/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script type="text/javascript" src="./lib/js/d3.min.js"></script> 
     <script type="text/javascript" src="./lib/js/underscore-min.js"></script>  
-
-    <style>
-
-    .title {
-      font-family: 'Montserrat', sans-serif;
-      text-rendering: optimizeLegibility;
-      font-size: 30px;
-      font-weight: 700;   
-      color: #202626;
-      margin-bottom:10px;
-    }     
-
-    .subtitle {
-      font-family: 'Montserrat', sans-serif;
-      text-rendering: optimizeLegibility;
-      font-size: 15px;
-      font-weight: 400;  
-      color: #2C3E50; 
-      margin-bottom:10px;
-    }
-
-    .head {
-      margin-top:   30px;
-      margin-left:  40px;
-      margin-right: 40px;
-    }
-
-    .data {
-      margin-top:    0px;
-      margin-left:  40px;
-      margin-right: 40px;      
-    }
-
-    body {
-      background-color: #FFF;
-    }    
-
-    </style>    
+    <script type="text/javascript" src="./lib/js/util.js"></script>  
+  
   </head>
   
   <body>
@@ -63,12 +28,252 @@
         <p class="title">
           Those who stayed over time
           <small class="subtitle"> How did some diasporic websites remain central since their creation ? </small>
-        </p>
+        </p>       
       </div>
       <br>
-      <div class="container-fluid data" id="data">   
+      
+      <div class="container-fluid viz row">
+        <div class="col-2" id="panel">
+          <label for="select-site" class="subtitle"><i>Select a site ...</i></label>
+          <select id="select-site" class="subtitle">
+            <optgroup label="Blogs">
+              <option value="atmf.org" selected>atmf</option>
+              <option value="larbi.org">larbi</option>
+              <option value="7didane.org">7didane</option>
+            </optgroup>
+            <optgroup label="Yabiladi">
+              <option value="yabiladi.com (forum)">forum</option>
+              <option value="yabiladi.com (site)">site</option>
+            </optgroup>
+          </select>
+          <hr>
+          <div id="info-box">
+            <p id="site-name" class="site-name"></p>
+            <p id="site-date" class="info-text"></p>
+            <div class="info-topic info-text">
+              <blockquote>
+                <p id="topic-name" class="topic-name"></p>
+                <p id="nb-authors" class="text-center info-text"></p>
+                <p id="topic-by-author" class="info-text"></p>
+                <p id="author-name" class="author-name"></p>
+                <ul id="author-path" class="list-unstyled info-text">
+                </ul>
+              </blockquote>          
+            </div>          
+          </div>          
+        </div>
+        <div class="col-10" id="data">
+          <form class="form-inline">
+            <button type="button" class="btn btn-light btn-zoom mb-2">
+              <i class="fas fa-expand-arrows-alt"></i>
+            </button>
+            <div class="form-check mb-2 mr-sm-2">
+              <input type="checkbox" class="form-check-input" id="urlCheck">
+              <label class="form-check-label" for="urlCheck"><i>Highlight url's path</i></label>
+            </div>            
+          </form>
+        </div>
+      </div>   
 
-      <script type="text/javascript">                     
+      <script type="text/javascript"> 
+
+        /*
+         * D3 https://bl.ocks.org/sjengle/2e58e83685f6d854aa40c7bc546aeb24
+         */                      
+
+        screenHeight = $(window).height()
+        dataWidth   = document.getElementById("data").offsetWidth
+        panelWidth  = document.getElementById("panel").offsetWidth
+
+        var authorsPath = {}
+
+        var w = dataWidth,
+            h = screenHeight - 200;
+
+        var zoom = d3.zoom()
+          .scaleExtent([1, 10])
+          .on("zoom", zoomed);          
+
+        var svgData = d3.select("#data")
+            .append("svg")
+            .attr("width" , w)
+            .attr("height", h).call(zoom);
+
+        var svgPanel = d3.select("#panel")
+            .append("svg")
+            .attr("width" , panelWidth)
+            .attr("height", h);
+
+        var parseTime = d3.timeParse("%d-%m-%Y");
+
+        var frame  = svgData.append("g")
+
+        var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);   
+
+        var clickedLeaf = ""
+
+        /*
+         * Define arrowhead marker 
+         */                          
+
+        frame.append("defs").append("marker")
+          .attr("id", "arrowhead")
+          .attr("class","arrowhead")
+          .attr("viewBox", "0 -5 10 10")
+          .attr("refX", 8)
+          .attr("refY", 0)
+          .attr("markerWidth", 4)
+          .attr("markerHeight", 4)
+          .attr("orient", "auto")
+          .append("path")
+          .attr("d", "M0,-5L10,0L0,5");               
+
+        function zoomed() {
+          frame.attr("transform", d3.event.transform);
+          gX.call(xAxis.scale(d3.event.transform.rescaleX(xScale)));
+        }
+
+        function resetted() {
+          svgData.transition()
+              .duration(750)
+              .call(zoom.transform, d3.zoomIdentity);
+        }
+
+        function addLeaf(x,y,r,l,id,type) {
+          frame.append("circle")
+            .attr("id","leaf-" + id)
+            .attr("cx",x)
+            .attr("cy",y)
+            .attr("nbChildren",parseFloat(l["nbChildren"]))
+            .attr("currChild",0)
+            .attr("first",l["first"])
+            .attr("authors",l["authors"])
+            .attr("topic",l["topic"])
+            .attr("nbPosts",l["nbPosts"])
+            .attr("url",l["url"])
+            .attr("r",r)
+            .attr("class",type)
+            .on("mouseover", function(){
+              if (type.indexOf("topic") !== -1) { 
+                d3.select(this).style("cursor","pointer");
+                drawTopicFocus(d3.select(this),"over",div,clickedLeaf)
+              }
+            })
+            .on("mouseout", function(){
+              if (type.indexOf("topic") !== -1) {
+                drawTopicFocus(d3.select(this),"out",div,clickedLeaf)
+              }              
+            })
+            .on("click", function(){
+              if (type.indexOf("topic") !== -1) {
+                if (clickedLeaf != "") {
+                  d3.select(clickedLeaf).style("stroke","none").style("stroke-width","none").style("opacity","0.4")             
+                }
+                clickedLeaf = this              
+                d3.select(this).style("stroke","#FF530D").style("stroke-width","2").style("opacity","1")
+                clearInfoBox()
+                setTopicInfo(d3.select(this),authorsPath,div,clickedLeaf)              
+              }              
+            });          
+        }         
+
+        d3.select("button").on("click", resetted);
+
+        var xL = 20;
+        var xScale = d3.scaleTime().range([xL, w]);
+        var xAxis  = d3.axisBottom(xScale)
+        var gX     = svgData.append("g")
+
+        months = ["01","02","03","04","05","06","07","08","09","10","11","12"]
+        months_name = ["Janv","Fev","Mars","Avr","Mai","Juin","Juil","Aout","Sept","Oct","Nov","Dec"]
+
+        function setWebTree(key,dateInf,dateSup,maxChild,branchesFile,authorsFile,leafPadding,dom) {
+          
+            xScale.domain([parseTime(dateInf),parseTime(dateSup)]);                          
+
+            gX.attr("class","axis-x").call(xAxis);
+
+            authorsPath = {}
+
+            d3.csv("./" + authorsFile, function(lines) {   
+              _.each(lines,function(l){
+                authorsPath[l["author"]] = l["topics"].split("|")
+              })
+            })                
+
+            d3.csv("./" + branchesFile, function(lines) {          
+              
+              var root = lines[0]
+              lines = _.rest(lines)
+              var r  = 20;
+              addLeaf(xScale(parseTime(root["first"])),h/2,15,root,root["id"],"leaf-hidden stratum")
+              drawRoot(d3.select("#leaf-0"),dom)
+
+              _.each(lines,function(l){
+
+                var xy = getLeafCoordo(l,parseTime,xScale,leafPadding,r)
+                var x1 = xy[0]
+                var y1 = xy[1]
+                var x2 = xy[2]
+                var y2 = xy[3]
+
+                if (l["hasChildren"] == "True") {
+                  addLeaf(x2,y2,3,l,l["id"],"leaf-hidden stratum");
+                } else {
+                  addLeaf(x2,y2,3,l,l["id"],"leaf-hidden stratum");
+                }
+
+                var pathOpacity = mapscale(parseFloat(l["descent"]),1,maxChild,0.1,1)
+                var pathStroke  = mapscale(parseFloat(l["descent"]),1,maxChild,0.5,2.5) + "px"
+
+                frame.append("path")
+                  .attr("class","branch stratum")
+                  .attr("d", function(d) {
+                    return "M" + x1 + "," + y1
+                      + "C" + x2 + "," + y1
+                      + " " + x2 + "," + y2
+                      + " " + x2 + "," + y2;                        
+                  })
+                  .attr("id","path-to-" + l["id"])
+                  .attr("from",l["parentId"])
+                  .attr("to",l["id"])
+                  .attr("opacity",pathOpacity)
+                  .attr("stroke",pathStroke)
+                  .style("opacity", pathOpacity)
+                  .style("stroke-width", pathStroke)
+                  .on("mouseover", function(){
+                    if(document.getElementById('urlCheck').checked) {
+                      mouseOverPath(d3.select(this).attr("to"),d3.select("#leaf-" + d3.select(this).attr("to")).attr("url"));
+                    }
+                  })
+                  .on("mouseout",function(){
+                    if (document.getElementById('urlCheck').checked) {
+                      mouseOutPath(d3.select(this).attr("to"))
+                    }
+                  });   
+
+                if (l["cat"] != null && l["cat"] != "") {
+                  var rayon = mapscale(parseFloat(l["nbPosts"]),15,232,6,25)
+                  addLeaf(x2,y2,rayon,l,l["id"],"topic stratum");                        
+                }             
+
+              })        
+            })                 
+        }
+
+        setViz("yabiladi.com (forum)") 
+
+        /*
+         * Bootstrap 
+         */       
+
+        $("#select-site").on("change", function(){
+          var val = $(this).find("option:selected").val()
+          frame.selectAll(".stratum").remove()
+          setViz(val)
+          resetted()
+        });        
+                            
 
       </script>     
   

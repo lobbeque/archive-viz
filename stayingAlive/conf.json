@@ -1,0 +1,52 @@
+{
+  	"larbi.org" : {
+  		"domaine" : "larbi.org",
+  		"dateInf" : "01-10-2002",
+  		"dateSup" : "01-08-2017",
+  		"maxChild" : 10688,
+  		"leafPadding" : 200,
+  		"keysFile" : "keys-larbi.csv",
+  		"branchesFile" : "branches-larbi.csv",
+      "authorsFile" : "authors-larbi.csv"
+  	},
+  	"atmf.org" : {
+  		"domaine" : "atmf.org",
+  		"dateInf" : "01-01-2000",
+  		"dateSup" : "01-08-2017",
+  		"maxChild" : 291,
+  		"leafPadding" : 200,
+  		"keysFile" : "keys-atmf.csv",
+  		"branchesFile" : "branches-atmf.csv",
+      "authorsFile" : "authors-atmf.csv"      
+  	},
+ 	"7didane.org" : {
+  		"domaine" : "7didane.org",
+  		"dateInf" : "01-01-2008",
+  		"dateSup" : "03-01-2012",
+  		"maxChild" : 483,
+  		"leafPadding" : 200,
+  		"keysFile" : "keys-7didane.csv",
+  		"branchesFile" : "branches-7didane.csv",
+      "authorsFile" : "authors-7didane.csv"      
+ 	},
+ 	"yabiladi.com (forum)" : {
+  		"domaine" : "yabiladi.com",
+  		"dateInf" : "01-01-2002",
+  		"dateSup" : "01-01-2018",
+  		"maxChild" : 2401,
+  		"leafPadding" : 250,
+  		"keysFile" : "keys-forum-yabiladi.csv",
+  		"branchesFile" : "branches-forum-yabiladi.csv",
+      "authorsFile" : "authors-forum-yabiladi.csv"
+ 	},
+ 	"yabiladi.com (site)" : {
+  		"domaine" : "yabiladi.com",
+  		"dateInf" : "01-01-2002",
+  		"dateSup" : "01-01-2018",
+  		"maxChild" : 35000,
+  		"leafPadding" : 400,
+  		"keysFile" : "keys-yabiladi.csv",
+  		"branchesFile" : "branches-yabiladi.csv",
+      "authorsFile" : "authors-yabiladi.csv"
+ 	}
+}
